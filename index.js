@@ -1,30 +1,37 @@
 require('dotenv').config();
 const cloudinary = require('cloudinary');
 const express = require('express');
-const morgan = require('morgan');
+const app  = express();
 const cors  = require('cors');
+const corsConfig = {
+    origin : "*",
+    credential:true,
+    methods:["GET","POST","PUT","DELETE"]
+};
+app.use(cors(corsConfig))
+app.options("",cors(corsConfig));
+const morgan = require('morgan');
 const dbConnect = require('./db');
 const cookieParser = require('cookie-parser')
 
 const errorMiddleware = require('./middleware/errorMiddleware');
 
 
-const app  = express();
 const port = process.env.PORT || 6000;
 
 app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(cors())
 app.use(morgan('dev'))
+
+app.all('*',(req,res)=>{
+    res.status(404).send('OOPS!! 404 page not found')
+})
 
 app.use('/api/auth',require('./routes/authRoute'))
 app.use('/api/conversation',require('./routes/conversationRoute'))
 app.use('/api/message',require('./routes/messageRoute'))
 
-app.all('*',(req,res)=>{
-    res.status(404).send('OOPS!! 404 page not found')
-})
 
 
 app.use(errorMiddleware)
